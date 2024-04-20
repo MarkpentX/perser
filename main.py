@@ -1,3 +1,14 @@
+import os
+import json
+import requests
+
+from bs4 import BeautifulSoup
+
+# Создаем папку для сохранения изображений, если ее еще нет
+os.makedirs('images', exist_ok=True)
+
+# Счетчик для уникальных имен файлов
+count = 0
 
 import os
 import json
@@ -9,21 +20,29 @@ from bs4 import BeautifulSoup
 os.makedirs('images', exist_ok=True)
 
 # Счетчик для уникальных имен файлов
-count = 1
+count = 0
 
 # Список для хранения данных для JSON
 apps_data = []
 
-for page_num in range(1, 41):  # страницы с 1 по 40
-    url = f"https://happymod.com/new-mod,{page_num}.html"
+for page_num in range(0, 100):  # страницы с 1 по 40
+    url = ""
+    if (count == 0):
+        url = "https://happymod.com/new-mod.html"
+    else:
+        url = f"https://happymod.com/new-mod,{page_num}.html"
     response = requests.get(url)
+    if response.status_code != 200:
+        break
     soup = BeautifulSoup(response.content, 'html.parser')
 
     mod_images = soup.find_all(class_='pdt-list-img')
 
     for mod_image in mod_images:
         img_src = mod_image.find('img')['data-original']
+        img_alt = mod_image.find('img')['alt']
         print("Url:", img_src)
+        print("Alt:", img_alt)
 
         # Определяем имя файла из URL
         img_name = f"image_{count}.jpg"
@@ -38,7 +57,7 @@ for page_num in range(1, 41):  # страницы с 1 по 40
 
         # Создаем запись для JSON
         app_data = {
-            "name": f"Name {count} APPS",
+            "name": img_alt,
             "unique_id": img_name
         }
         apps_data.append(app_data)
